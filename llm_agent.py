@@ -60,12 +60,20 @@ while True:
         print("🔧 [Agent System] Triggering Tool: get_weather_romania()...")
         tool_context = get_weather_romania()
 
-    # If a tool was triggered, augment the prompt with ground truth data before giving it to the LLM
+    # If a tool was triggered, augment the prompt with ground truth data before giving it to the LLM    
     if tool_context:
-        agent_augmented_prompt = f"[System Context Notice: {tool_context}]\nUser Question: {user_input}"
+        # --- ENHANCED STRICT ISOLATION WRAPPER ---
+        agent_augmented_prompt = (
+            f"### CRITICAL GROUND TRUTH DATA:\n"
+            f"```text\n{tool_context}\n```\n"
+            f"INSTRUCTION: You must strictly use the data above to answer the user's question. "
+            f"Ignore all previous months or seasons mentioned in chat history.\n"
+            f"User Question: {user_input}"
+        )
         messages.append({"role": "user", "content": agent_augmented_prompt})
     else:
         messages.append({"role": "user", "content": user_input})
+
         
     # Render final ChatML prompt layout
     prompt = generator.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
